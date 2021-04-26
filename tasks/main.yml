@@ -1,0 +1,29 @@
+---
+- name: Ensure config dir
+  become: yes
+  become_user: root
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+  with_items:
+    - "{{ blackbox_exporter_config_dir }}"
+    - "{{ blackbox_exporter_config_dir }}/sources"
+
+- name: Copy blackbox config file
+  template:
+    src: config.yml.j2
+    dest: "{{ blackbox_exporter_config_dir }}/config.yml"
+    mode: 0644
+    owner: root
+    group: root
+
+- name: Include docker-related tasks
+  include_tasks: run_in_docker.yml
+  when: blackbox_exporter_run_in_docker
+
+- name: Include standalone tasks
+  include_tasks: run_standalone.yml
+  when: not blackbox_exporter_run_in_docker

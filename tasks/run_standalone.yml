@@ -1,0 +1,62 @@
+---
+- name: Get blackbox exporter
+  become: yes
+  become_user: root
+  get_url:
+    url: "https://github.com/prometheus/blackbox_exporter/releases/download/v{{ blackbox_exporter_version }}/blackbox_exporter-{{ blackbox_exporter_version }}.{{ blackbox_exporter_arch }}.tar.gz"
+    dest: "{{ blackbox_exporter_config_dir }}/sources/blackbox_exporter-{{ blackbox_exporter_version }}.{{ blackbox_exporter_arch }}.tar.gz"
+    mode: 0644
+    owner: root
+    group: root
+
+- name: Unzip blackbox exporter
+  become: yes
+  become_user: root
+  unarchive:
+    remote_src: yes
+    src: "{{ blackbox_exporter_config_dir }}/sources/blackbox_exporter-{{ blackbox_exporter_version }}.{{ blackbox_exporter_arch }}.tar.gz"
+    dest: "{{ blackbox_exporter_config_dir }}/sources/"
+    creates: "{{ blackbox_exporter_config_dir }}/sources/blackbox_exporter-{{ blackbox_exporter_version }}.{{ blackbox_exporter_arch }}/blackbox_exporter"
+
+- name: Copy exporter to PATH
+  become: yes
+  become_user: root
+  copy:
+    remote_src: yes
+    src: "{{ blackbox_exporter_config_dir }}/sources/blackbox_exporter-{{ blackbox_exporter_version }}.{{ blackbox_exporter_arch }}/blackbox_exporter"
+    dest: /usr/local/bin/blackbox_exporter
+    mode: 0755
+    owner: root
+    group: root
+  notify:
+    - Restart blackbox exporter
+
+- name: Create blackbox exporter user
+  user:
+    name: "{{ blackbox_exporter_user }}"
+    comment: "blackbox exporter user"
+    shell: /usr/sbin/nologin
+
+- name: Exporters | blackbox exporter | Ensure blackbox exporter systemd unit
+  become: yes
+  become_user: root
+  template:
+    src: systemd.service.j2
+    dest: "/etc/systemd/system/blackbox-exporter.service"
+    owner: root
+    group: root
+    mode: 0644
+  register: systemd_unitfile
+  notify:
+    - Restart blackbox exporter
+
+- name: Exporters | blackbox exporter | Enable systemd service
+  become: yes
+  become_user: root
+  systemd:
+    name: "blackbox-exporter.service"
+    enabled: yes
+    daemon_reload: yes
+    state: started
+  when:
+    - systemd_unitfile.changed

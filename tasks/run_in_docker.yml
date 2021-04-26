@@ -1,0 +1,23 @@
+---
+- name: Start docker node exporter container
+  docker_service:
+    state: present
+    project_name: prometheus_blackbox_exporter
+    definition:
+      version: '2'
+      services:
+        blackbox_exporter:
+          image: "{{ blackbox_exporter_docker_image }}"
+          command: "--config.file=/config/config.yml"
+          container_name: "{{ blackbox_exporter_container_name }}"
+          ports:
+            - "127.0.0.1:{{ blackbox_exporter_host_port }}:{{ blackbox_exporter_host_port }}"
+          volumes:
+            - {{ blackbox_exporter_config_dir }}:/config
+          hostname: "{{ ansible_host }}"
+          restart: always
+          labels: "{{ blackbox_exporter_docker_labels }}"
+      networks:
+        default:
+          external:
+            name: "{{ blackbox_exporter_docker_network_name }}"
