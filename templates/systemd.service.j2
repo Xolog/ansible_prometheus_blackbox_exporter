@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User={{ blackbox_exporter_user }}
 Group={{ blackbox_exporter_user }}
-ExecStart=/usr/local/bin/blackbox_exporter --config.file={{ blackbox_exporter_config_dir }}/config.yml
+ExecStart=/usr/local/bin/blackbox_exporter --config.file={{ blackbox_exporter_config_dir }}/config.yml --web.listen-address="{{ blackbox_exporter_host_address }}:{{ blackbox_exporter_host_port }}"
 ExecStop=/bin/kill -s TERM $MAINPID
 PrivateTmp=true
 Restart=on-failure

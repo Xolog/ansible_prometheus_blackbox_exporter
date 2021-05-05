@@ -9,6 +9,7 @@ blackbox_exporter_docker_labels:
   - exporter
   - blackbox_exporter
 blackbox_exporter_host_port: 9115
+blackbox_exporter_host_address: 127.0.0.1
 blackbox_exporter_version: '0.18.0'
 blackbox_exporter_arch: linux-amd64
 blackbox_exporter_metrics_path: metrics
