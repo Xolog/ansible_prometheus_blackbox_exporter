@@ -1,6 +1,6 @@
 ---
 - name: Start docker node exporter container
-  docker_service:
+  community.docker.docker_compose:
     state: present
     project_name: prometheus_blackbox_exporter
     definition:
