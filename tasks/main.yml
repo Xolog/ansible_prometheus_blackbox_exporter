@@ -19,6 +19,8 @@
     mode: 0644
     owner: root
     group: root
+  notify:
+    - Restart blackbox exporter docker
 
 - name: Include docker-related tasks
   include_tasks: run_in_docker.yml

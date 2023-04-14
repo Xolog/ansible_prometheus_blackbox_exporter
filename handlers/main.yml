@@ -3,3 +3,11 @@
   service:
     name: blackbox-exporter.service
     state: restarted
+
+- name: Restart blackbox exporter docker
+  community.docker.docker_container:
+    name: "{{ blackbox_exporter_container_name }}"
+    state: started
+    restart: true
+  when: blackbox_exporter_run_in_docker
+  
