@@ -10,4 +10,3 @@
     state: started
     restart: true
   when: blackbox_exporter_run_in_docker
-  
