@@ -8,7 +8,7 @@
       services:
         blackbox_exporter:
           image: "{{ blackbox_exporter_docker_image }}"
-          command: "--config.file=/config/config.yml"
+          command: "{{ blackbox_exporter_command }}"
           container_name: "{{ blackbox_exporter_container_name }}"
           ports:
             - "127.0.0.1:{{ blackbox_exporter_host_port }}:{{ blackbox_exporter_host_port }}"
@@ -21,3 +21,48 @@
         default:
           external:
             name: "{{ blackbox_exporter_docker_network_name }}"
+  when: blackbox_swarm_manager is undefined
+
+- name: Deploy blackbox_exporter to docker swarm
+  block:
+    - name: Ensure pip installation
+      package:
+        name: "python3-pip"
+        state: present
+
+    - name: Install newer version of pip itself
+      pip:
+        name: "pip"
+        state: latest
+        executable: pip3
+
+    - name: Install jsondiff from pip
+      pip:
+        name: "jsondiff"
+        state: present
+        executable: pip3
+
+    - name: Deploy docker blackbox_exporter container in swarm
+      community.docker.docker_stack:
+        state: present
+        name: "{{ blackbox_exporter_stack_name }}"
+        compose:
+          - version: '3.5'
+            services:
+              blackbox_exporter:
+                image: "{{ blackbox_exporter_docker_image }}"
+                command: "{{ blackbox_exporter_command }}"
+                hostname: "{{ blackbox_exporter_container_name }}"
+                labels: "{{ blackbox_exporter_docker_labels }}"
+                ports:
+                  - "{{ blackbox_exporter_host_port }}:{{ blackbox_exporter_host_port }}"
+                volumes:
+                  - "{{ blackbox_exporter_config_dir }}:/config"
+                deploy: "{{ blackbox_exporter_swarm_deploy }}"
+            networks:
+              default:
+                external:
+                  name: "{{ blackbox_exporter_docker_network_name }}"
+      run_once: True
+  delegate_to: "{{ blackbox_swarm_manager }}"
+  when: blackbox_swarm_manager is defined
