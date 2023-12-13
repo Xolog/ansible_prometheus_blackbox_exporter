@@ -54,6 +54,8 @@
                 command: "{{ blackbox_exporter_command }}"
                 hostname: "{{ blackbox_exporter_container_name }}"
                 labels: "{{ blackbox_exporter_docker_labels }}"
+                ports:
+                  - "{{ blackbox_exporter_host_port }}:{{ blackbox_exporter_host_port }}"
                 volumes:
                   - "{{ blackbox_exporter_config_dir }}:/config"
                 deploy: "{{ blackbox_exporter_swarm_deploy }}"
