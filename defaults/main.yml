@@ -14,6 +14,7 @@ blackbox_exporter_version: '0.18.0'
 blackbox_exporter_arch: linux-amd64
 blackbox_exporter_metrics_path: metrics
 blackbox_exporter_user: blackbox
+blackbox_exporter_command: "--config.file=/config/config.yml"
 blackbox_exporter_config:
   http_2xx:
     prober: http
@@ -34,3 +35,22 @@ blackbox_exporter_config:
   tcp_ports:
     prober: tcp
     timeout: 3s
+
+blackbox_exporter_stack_name: blackbox_exporter
+blackbox_exporter_swarm_deploy:
+  mode: global
+
+# example blackbox_exporter_swarm_deploy:
+#   mode: replicated
+#   replicas: 2
+#   restart_policy:
+#     condition: any
+#     delay: 10s
+#   update_config:
+#     parallelism: 1
+#     delay: 30s
+#     failure_action: rollback
+#   placement:
+#     max_replicas_per_node: 1
+#     constraints:
+#       - node.labels.blackbox_exporter == true
