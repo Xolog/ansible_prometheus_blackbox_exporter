@@ -11,6 +11,7 @@
   with_items:
     - "{{ blackbox_exporter_config_dir }}"
     - "{{ blackbox_exporter_config_dir }}/sources"
+  when: blackbox_swarm_manager is undefined
 
 - name: Copy blackbox config file
   template:
@@ -21,6 +22,7 @@
     group: root
   notify:
     - Restart blackbox exporter docker
+  when: blackbox_swarm_manager is undefined
 
 - name: Include docker-related tasks
   include_tasks: run_in_docker.yml

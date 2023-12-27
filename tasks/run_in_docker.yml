@@ -42,10 +42,27 @@
         state: present
         executable: pip3
 
+    - name: Add modules to config
+      set_fact:
+        blackbox_exporter_config:
+          modules: "{{ blackbox_exporter_config }}"
+
+    - name: Create config
+      community.docker.docker_config:
+        name: blackbox_exporter_config_{{ item }}
+        data: "{{ blackbox_exporter_config | to_nice_yaml }}"
+        state: present
+      ignore_errors: True
+      register: created_configs
+      loop:
+        - "0"
+        - "1"
+
     - name: Deploy docker blackbox_exporter container in swarm
       community.docker.docker_stack:
         state: present
         name: "{{ blackbox_exporter_stack_name }}"
+        with_registry_auth: yes
         compose:
           - version: '3.5'
             services:
@@ -54,15 +71,38 @@
                 command: "{{ blackbox_exporter_command }}"
                 hostname: "{{ blackbox_exporter_container_name }}"
                 labels: "{{ blackbox_exporter_docker_labels }}"
+                configs:
+                  - source: "{{ item.config_name }}"
+                    target: "/etc/blackboxexporter/config.yml"
                 ports:
                   - "{{ blackbox_exporter_host_port }}:{{ blackbox_exporter_host_port }}"
-                volumes:
-                  - "{{ blackbox_exporter_config_dir }}:/config"
                 deploy: "{{ blackbox_exporter_swarm_deploy }}"
             networks:
               default:
                 external:
                   name: "{{ blackbox_exporter_docker_network_name }}"
-      run_once: True
+            configs: |
+              {{
+                {
+                  item.config_name: {
+                    "external": true
+                  }
+                }
+              }}
+      register: result
+      when:
+        - item.changed
+        - not result.changed | default(false)
+      loop: "{{ created_configs.results }}"
+
+    - name: Remove config
+      community.docker.docker_config:
+        name: blackbox_exporter_config_{{ item }}
+        state: absent
+      ignore_errors: True
+      loop:
+        - "0"
+        - "1"
   delegate_to: "{{ blackbox_swarm_manager }}"
   when: blackbox_swarm_manager is defined
+  run_once: True
