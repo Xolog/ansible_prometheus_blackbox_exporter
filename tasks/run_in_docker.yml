@@ -1,10 +1,9 @@
 ---
 - name: Start docker node exporter container
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     state: present
     project_name: prometheus_blackbox_exporter
     definition:
-      version: '2'
       services:
         blackbox_exporter:
           image: "{{ blackbox_exporter_docker_image }}"
@@ -19,8 +18,8 @@
           labels: "{{ blackbox_exporter_docker_labels }}"
       networks:
         default:
-          external:
-            name: "{{ blackbox_exporter_docker_network_name }}"
+          external: true
+          name: "{{ blackbox_exporter_docker_network_name }}"
   when: blackbox_swarm_manager is undefined
 
 - name: Deploy blackbox_exporter to docker swarm
