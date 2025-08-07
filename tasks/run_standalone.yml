@@ -1,6 +1,6 @@
 ---
-- name: Get blackbox exporter
-  become: yes
+- name: Exporters | blackbox exporter | Get blackbox exporter
+  become: true
   become_user: root
   get_url:
     url: "https://github.com/prometheus/blackbox_exporter/releases/download/v{{ blackbox_exporter_version }}/blackbox_exporter-{{ blackbox_exporter_version }}.{{ blackbox_exporter_arch }}.tar.gz"
@@ -9,8 +9,8 @@
     owner: root
     group: root
 
-- name: Unzip blackbox exporter
-  become: yes
+- name: Exporters | blackbox exporter | Unzip blackbox exporter
+  become: true
   become_user: root
   unarchive:
     remote_src: yes
@@ -18,8 +18,8 @@
     dest: "{{ blackbox_exporter_config_dir }}/sources/"
     creates: "{{ blackbox_exporter_config_dir }}/sources/blackbox_exporter-{{ blackbox_exporter_version }}.{{ blackbox_exporter_arch }}/blackbox_exporter"
 
-- name: Copy exporter to PATH
-  become: yes
+- name: Exporters | blackbox exporter | Copy exporter to PATH
+  become: true
   become_user: root
   copy:
     remote_src: yes
@@ -31,14 +31,14 @@
   notify:
     - Restart blackbox exporter
 
-- name: Create blackbox exporter user
+- name: Exporters | blackbox exporter | Create blackbox exporter user
   user:
     name: "{{ blackbox_exporter_user }}"
     comment: "blackbox exporter user"
     shell: /usr/sbin/nologin
 
 - name: Exporters | blackbox exporter | Ensure blackbox exporter systemd unit
-  become: yes
+  become: true
   become_user: root
   template:
     src: systemd.service.j2
@@ -51,7 +51,7 @@
     - Restart blackbox exporter
 
 - name: Exporters | blackbox exporter | Enable systemd service
-  become: yes
+  become: true
   become_user: root
   systemd:
     name: "blackbox-exporter.service"

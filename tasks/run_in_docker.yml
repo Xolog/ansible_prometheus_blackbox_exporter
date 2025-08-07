@@ -1,5 +1,5 @@
 ---
-- name: Blackbox exporter | Check network_mode value
+- name: Exporters | blackbox exporter | Check network_mode value
   assert:
     that: 
       - blackbox_exporter_network_mode in ['none', 'host']
@@ -9,14 +9,14 @@
       Invalid blackbox_exporter_network_mode: '{{ blackbox_exporter_network_mode }}'.
       Allowed: 'none', 'host', 'container:<name>', 'service:<name>'.
 
-- name: Start docker blackbox exporter container
+- name: Exporters | blackbox exporter | Start docker blackbox exporter container
   community.docker.docker_compose_v2:
     state: present
     project_name: prometheus_blackbox_exporter
     definition: "{{ lookup('template', 'blackbox-compose.yml.j2') | from_yaml }}"
   when: blackbox_swarm_manager is undefined
 
-- name: Deploy blackbox_exporter to docker swarm
+- name: Exporters | blackbox exporter | Deploy blackbox_exporter to docker swarm
   block:
     - name: Ensure pip installation
       package:
