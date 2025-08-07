@@ -1,4 +1,14 @@
 ---
+- name: Blackbox exporter | Check network_mode value
+  assert:
+    that: 
+      - blackbox_exporter_network_mode in ['none', 'host']
+        or blackbox_exporter_network_mode is search('^container:.+')
+        or blackbox_exporter_network_mode is search('^service:.+')
+    fail_msg: >
+      Invalid blackbox_exporter_network_mode: '{{ blackbox_exporter_network_mode }}'.
+      Allowed: 'none', 'host', 'container:<name>', 'service:<name>'.
+
 - name: Start docker blackbox exporter container
   community.docker.docker_compose_v2:
     state: present

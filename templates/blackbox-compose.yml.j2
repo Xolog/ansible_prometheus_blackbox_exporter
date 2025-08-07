@@ -3,7 +3,7 @@ services:
     image: "{{ blackbox_exporter_docker_image }}"
     command: "{{ blackbox_exporter_command }}"
     container_name: "{{ blackbox_exporter_container_name }}"
-{% if blackbox_exporter_network_mode | default('none') == 'none' %}
+{% if blackbox_exporter_network_mode == 'none' %}
     ports:
       - "127.0.0.1:{{ blackbox_exporter_host_port }}:{{ blackbox_exporter_host_port }}"
 {% endif %}
@@ -15,11 +15,11 @@ services:
 {% for key, value in blackbox_exporter_docker_labels.items() %}
       {{ key }}: "{{ value }}"
 {% endfor %}
-{% if blackbox_exporter_network_mode | default('none') != 'none' %}
+{% if blackbox_exporter_network_mode != 'none' %}
     network_mode: "{{ blackbox_exporter_network_mode }}"
 {% endif %}
 
-{% if blackbox_exporter_network_mode | default('none') == 'none' %}
+{% if blackbox_exporter_network_mode == 'none' %}
 networks:
   default:
     external: true
