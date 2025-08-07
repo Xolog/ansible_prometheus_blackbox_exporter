@@ -1,28 +1,22 @@
 ---
-- name: Start docker node exporter container
+- name: Exporters | blackbox exporter | Check network_mode value
+  assert:
+    that: 
+      - blackbox_exporter_network_mode in ['none', 'host']
+        or blackbox_exporter_network_mode is search('^container:.+')
+        or blackbox_exporter_network_mode is search('^service:.+')
+    fail_msg: >
+      Invalid blackbox_exporter_network_mode: '{{ blackbox_exporter_network_mode }}'.
+      Allowed: 'none', 'host', 'container:<name>', 'service:<name>'.
+
+- name: Exporters | blackbox exporter | Start docker blackbox exporter container
   community.docker.docker_compose_v2:
     state: present
     project_name: prometheus_blackbox_exporter
-    definition:
-      services:
-        blackbox_exporter:
-          image: "{{ blackbox_exporter_docker_image }}"
-          command: "{{ blackbox_exporter_command }}"
-          container_name: "{{ blackbox_exporter_container_name }}"
-          ports:
-            - "127.0.0.1:{{ blackbox_exporter_host_port }}:{{ blackbox_exporter_host_port }}"
-          volumes:
-            - "{{ blackbox_exporter_config_dir }}:/config"
-          hostname: "{{ ansible_host }}"
-          restart: always
-          labels: "{{ blackbox_exporter_docker_labels }}"
-      networks:
-        default:
-          external: true
-          name: "{{ blackbox_exporter_docker_network_name }}"
+    definition: "{{ lookup('template', 'blackbox-compose.yml.j2') | from_yaml }}"
   when: blackbox_swarm_manager is undefined
 
-- name: Deploy blackbox_exporter to docker swarm
+- name: Exporters | blackbox exporter | Deploy blackbox_exporter to docker swarm
   block:
     - name: Ensure pip installation
       package:
